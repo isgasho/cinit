@@ -7,10 +7,27 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 
+	secrets "github.com/ijustfool/docker-secrets"
 	log "github.com/sirupsen/logrus"
 )
+
+func envKey(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s, " ", "_")
+	s = strings.ReplaceAll(s, "-", "_")
+	return strings.ToUpper(s)
+}
+
+func mapToEnvList(kv map[string]string) []string {
+	var envList []string
+	for k, v := range kv {
+		envList = append(envList, fmt.Sprintf("%s=%s", envKey(k), v))
+	}
+	return envList
+}
 
 func main() {
 	if len(os.Args) < 2 {
@@ -20,6 +37,13 @@ func main() {
 
 	cmd := exec.Command(os.Args[1], os.Args[2:]...)
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
+	dockerSecrets, err := secrets.NewDockerSecrets("")
+	if err != nil {
+		log.WithError(err).Warn("error loading docker secerts")
+	} else {
+		cmd.Env = mapToEnvList(dockerSecrets.GetAll())
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
