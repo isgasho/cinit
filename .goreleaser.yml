@@ -14,6 +14,7 @@ signs:
     artifacts: checksum
 archives:
   -
+    format: binary
     replacements:
       linux: Linux
       amd64: x86_64
