@@ -18,8 +18,8 @@ cli:
 build:
 	@$(GOCMD) build -tags "netgo static_build" -installsuffix netgo \
 		-ldflags "-w \
-		-X .Version=$(VERSION) \
-		-X .Commit=$(COMMIT)" \
+		-X main.Version=$(VERSION) \
+		-X main.Commit=$(COMMIT)" \
 		.
 
 install: build
